@@ -10,24 +10,31 @@
 #' (n_samples, n_samples) distance or affinity matrix
 #' @param ndim int, optional, default: 2
 #' number of dimensions in which the data will be embedded
-#' @param k int, optional, default: 15
+#' @param k int, optional, default: 5
 #' number of nearest neighbors on which to build kernel
-#' @param alpha int, optional, default: NULL
+#' @param alpha int, optional, default: 15
 #' sets decay rate of kernel tails.
 #' If NULL, alpha decaying kernel is not used
 #' @param n.landmark int, optional, default: 2000
 #' number of landmarks to use in fast PHATE
-#' @param potential.method string, optional, default: 'log'
-#' choose from 'log' and 'sqrt'
-#' which transformation of the diffusional operator is used
-#' to compute the diffusion potential
+#' @param gamma float, optional, default: 1
+#' Informational distance constant between -1 and 1.
+#' `gamma=1` gives the PHATE log potential, `gamma=0` gives
+#' a square root potential.
 #' @param t int, optional, default: 'auto'
 #' power to which the diffusion operator is powered
 #' sets the level of diffusion
 #' @param knn.dist.method string, optional, default: 'euclidean'.
-#' The desired distance function for calculating pairwise distances on the data.
-#' If 'precomputed', `data` is treated as a
-#' (n_samples, n_samples) distance or affinity matrix
+#' recommended values: 'euclidean', 'cosine', 'precomputed'
+#' Any metric from `scipy.spatial.distance` can be used
+#' distance metric for building kNN graph. If 'precomputed',
+#' `data` should be an n_samples x n_samples distance or
+#' affinity matrix. Distance matrices are assumed to have zeros
+#' down the diagonal, while affinity matrices are assumed to have
+#' non-zero values down the diagonal. This is detected automatically using
+#' `data[0,0]`. You can override this detection with
+#' `knn.dist.method='precomputed_distance'` or
+#' `knn.dist.method='precomputed_affinity'`.
 #' @param init phate object, optional
 #' object to use for initialization. Avoids recomputing
 #' intermediate steps if parameters are the same.
@@ -55,8 +62,9 @@
 #' For n_jobs below -1, (n.cpus + 1 + n.jobs) are used. Thus for
 #' n_jobs = -2, all CPUs but one are used
 #' @param seed int or `NULL`, random state (default: `NULL`)
-#' @param use.alpha boolean, default: NULL
-#' Deprecated. To disable alpha decay, use `alpha=NULL`
+#' @param potential.method Deprecated.
+#' @param use.alpha Deprecated
+#' To disable alpha decay, use `alpha=NULL`
 #' @param n.svd Deprecated.
 #' @param pca.method Deprecated.
 #' @param g.kernel Deprecated.
@@ -103,15 +111,17 @@
 #'
 #' }
 #' @export
-phate <- function(data, ndim = 2, k = 15,
-                  alpha = 10, use.alpha=NULL,
-                  n.landmark=2000, potential.method = "log",
+phate <- function(data, ndim = 2, k = 5,
+                  alpha = 15,
+                  n.landmark=2000, gamma=1,
                   t = "auto", knn.dist.method = "euclidean",
                   init=NULL,
                   mds.method = "metric", mds.dist.method = "euclidean",
                   t.max=100, npca = 100, plot.optimal.t=FALSE,
                   verbose=1, n.jobs=1, seed=NULL,
+                  potential.method = NULL,
                   # deprecated args, remove in v3
+                  use.alpha=NULL,
                   n.svd = NULL,
                   pca.method = NULL,
                   g.kernel=NULL, diff.op = NULL, landmark.transitions=NULL,
@@ -123,8 +133,20 @@ phate <- function(data, ndim = 2, k = 15,
   tryCatch(pyphate, error = function(e) load_pyphate())
   # check for deprecated arguments
   if (!is.null(dist.method)) {
-    message("Argument dist.method is deprecated. Use knn.dist.method instead.")
+    message("Argument dist.method is deprecated. Using knn.dist.method instead.")
     knn.dist.method <- dist.method
+  }
+  if (!is.null(potential.method)) {
+    if (potential.method == 'log') {
+      gamma <- 1
+    } else if (potential.method == 'sqrt') {
+      gamma <- 0
+    } else {
+      stop(paste0("potential.method ", potential.method, " not recognized. ",
+                  "Please use -1 <= gamma <= 1 instead."))
+    }
+    message(paste0("Argument potential_method is deprecated. Setting gamma to ",
+                   gamma, " to achieve ", potential.method, " transformation."))
   }
   if (!is.null(n.svd)) {
     message("Setting n.svd is currently not supported. Using n.svd=100")
@@ -207,8 +229,8 @@ phate <- function(data, ndim = 2, k = 15,
 
   # store parameters
   params <- list("data" = data, "k" = k, "alpha" = alpha, "t" = t,
-                 "n.landmark" = n.landmark, "ndim" = ndim,
-                 "potential.method" = potential.method,
+                 "n.landmark" = n.landmark, "gamma" = gamma,
+                 "ndim" = ndim,
                  "npca" = npca, "mds.method" = mds.method,
                  "knn.dist.method" = knn.dist.method,
                  "mds.dist.method" = mds.dist.method)
@@ -225,7 +247,7 @@ phate <- function(data, ndim = 2, k = 15,
                           t = t,
                           alpha_decay = use.alpha,
                           n_landmark = n.landmark,
-                          potential_method = potential.method,
+                          gamma = gamma,
                           n_pca = npca,
                           mds = mds.method,
                           mds_dist = mds.dist.method,
@@ -242,7 +264,7 @@ phate <- function(data, ndim = 2, k = 15,
                               t = t,
                               alpha_decay = use.alpha,
                               n_landmark = n.landmark,
-                              potential_method = potential.method,
+                              gamma = gamma,
                               n_pca = npca,
                               mds = mds.method,
                               mds_dist = mds.dist.method,
@@ -253,7 +275,7 @@ phate <- function(data, ndim = 2, k = 15,
   }
   embedding <- operator$fit_transform(data,
                                       t_max = t.max)
-  colnames(embedding) <- c("PHATE1", "PHATE2")
+  colnames(embedding) <- paste0("PHATE", 1:ncol(embedding))
   rownames(embedding) <- rownames(data)
   if (plot.optimal.t) {
     out <- operator$von_neumann_entropy(t_max = t.max)
@@ -313,7 +335,7 @@ plot.phate <- function(x, ...) {
 #' ## $embedding : (3000, 2)
 #' ## $operator : Python PHATE operator
 #' ## $params : list with elements (data, k, alpha, t, n.landmark, ndim,
-#' ##                               potential.method, npca, mds.method,
+#' ##                               gamma, npca, mds.method,
 #' ##                               knn.dist.method, mds.dist.method)
 #'
 #' }

@@ -31,16 +31,17 @@ load_pyphate <- function() {
 #' is not available on Windows.
 #' @param conda Path to conda executable (or "auto" to find conda using the PATH
 #'  and other conventional install locations).
+#' @param pip Install from pip, if possible.
 #' @param ... Additional arguments passed to conda_install() or
 #' virtualenv_install().
 #'
 #' @export
 install.phate <- function(envname = "r-reticulate", method = "auto",
-                          conda = "auto", ...) {
+                          conda = "auto", pip=TRUE, ...) {
   tryCatch({
     reticulate::py_install("phate",
       envname = envname, method = method,
-      conda = conda, ...
+      conda = conda, pip=pip, ...
     )
   },
   error = function(e) {
