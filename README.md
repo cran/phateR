@@ -1,4 +1,4 @@
-phateR v0.2.8
+phateR v0.2.9
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -110,8 +110,12 @@ python setup.py install --user
 ## Tutorial
 
 This is a basic example running `phate` on a highly branched example
-dataset that is included with the package. First, let’s examine it with
-PCA.
+dataset that is included with the package. You can read a tutorial on
+running PHATE on single-cell RNA-seq at
+<http://htmlpreview.github.io/?https://github.com/KrishnaswamyLab/phateR/blob/master/inst/examples/bonemarrow_tutorial.html>
+or in `inst/examples`.
+
+First, let’s load the tree data and examine it with PCA.
 
 ``` r
 library(phateR)
@@ -130,7 +134,7 @@ default parameters.
 tree.phate <- phate(tree.data$data)
 summary(tree.phate)
 #> PHATE embedding
-#> k = 5, alpha = 15, t = auto
+#> k = 5, alpha = 40, t = auto
 #> Data: (3000, 100)
 #> Embedding: (3000, 2)
 ```
@@ -170,6 +174,7 @@ installed.
 
 ``` r
 library(ggplot2)
+#> Warning: package 'ggplot2' was built under R version 3.5.1
 ggplot(tree.phate, aes(x=PHATE1, y=PHATE2, color=tree.data$branches)) +
   geom_point()
 ```
@@ -179,4 +184,7 @@ ggplot(tree.phate, aes(x=PHATE1, y=PHATE2, color=tree.data$branches)) +
 ## Issues
 
 Please let us know of any issues at the [GitHub
-repo](https://github.com/KrishnaswamyLab/phateR/issues)
+repo](https://github.com/KrishnaswamyLab/phateR/issues). If you have any
+questions or require assistance using PHATE, please read the documentation
+by running `help(phateR::phate)` or contact us at
+<https://krishnaswamylab.org/get-help>.

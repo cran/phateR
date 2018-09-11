@@ -4,13 +4,14 @@
 \alias{phate}
 \title{Run PHATE on an input data matrix}
 \usage{
-phate(data, ndim = 2, k = 5, alpha = 15, n.landmark = 2000, gamma = 1,
-  t = "auto", knn.dist.method = "euclidean", init = NULL,
-  mds.method = "metric", mds.dist.method = "euclidean", t.max = 100,
-  npca = 100, plot.optimal.t = FALSE, verbose = 1, n.jobs = 1,
-  seed = NULL, potential.method = NULL, use.alpha = NULL, n.svd = NULL,
-  pca.method = NULL, g.kernel = NULL, diff.op = NULL,
-  landmark.transitions = NULL, diff.op.t = NULL, dist.method = NULL)
+phate(data, ndim = 2, k = 5, alpha = 40, n.landmark = 2000,
+  gamma = 1, t = "auto", knn.dist.method = "euclidean",
+  init = NULL, mds.method = "metric", mds.dist.method = "euclidean",
+  t.max = 100, npca = 100, plot.optimal.t = FALSE, verbose = 1,
+  n.jobs = 1, seed = NULL, potential.method = NULL,
+  use.alpha = NULL, n.svd = NULL, pca.method = NULL,
+  g.kernel = NULL, diff.op = NULL, landmark.transitions = NULL,
+  diff.op.t = NULL, dist.method = NULL)
 }
 \arguments{
 \item{data}{matrix (n_samples, n_dimensions)
@@ -25,7 +26,7 @@ number of dimensions in which the data will be embedded}
 \item{k}{int, optional, default: 5
 number of nearest neighbors on which to build kernel}
 
-\item{alpha}{int, optional, default: 15
+\item{alpha}{int, optional, default: 40
 sets decay rate of kernel tails.
 If NULL, alpha decaying kernel is not used}
 
@@ -89,7 +90,8 @@ n_jobs = -2, all CPUs but one are used}
 
 \item{seed}{int or \code{NULL}, random state (default: \code{NULL})}
 
-\item{potential.method}{Deprecated.}
+\item{potential.method}{Deprecated.
+For log potential, use \code{gamma=1}. For sqrt potential, use \code{gamma=0}.}
 
 \item{use.alpha}{Deprecated
 To disable alpha decay, use \code{alpha=NULL}}
@@ -132,7 +134,7 @@ data(tree.data.small)
 phate.tree <- phate(tree.data.small$data)
 summary(phate.tree)
 ## PHATE embedding
-## k = 5, alpha = NULL, t = 58
+## k = 5, alpha = 40, t = 58
 ## Data: (3000, 100)
 ## Embedding: (3000, 2)
 

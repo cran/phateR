@@ -9,8 +9,27 @@ null_equal <- function(x, y) {
   }
 }
 
-load_pyphate <- function() {
-  pyphate <<- reticulate::import("phate", delay_load = TRUE)
+load_pyphate <- function(delay_load = FALSE) {
+  if (is.null(pyphate)) {
+    result <- try(pyphate <<- reticulate::import("phate", delay_load = delay_load))
+  } else {
+    result <- try(reticulate::import("phate", delay_load = delay_load))
+  }
+  if (methods::is(result, "try-error")) {
+    if (length(grep("ModuleNotFoundError: No module named 'phate'", result)) > 0 ||
+        length(grep("ImportError: No module named phate", result)) > 0) {
+      if (utils::menu(c("Yes", "No"), title="Install PHATE Python package with reticulate?") == 1) {
+        install.phate()        
+      }
+    } else if (length(grep("r\\-reticulate", reticulate::py_config()$python)) > 0) {
+      message("Consider removing the 'r-reticulate' environment by running:")
+      if (grep("virtualenvs", reticulate::py_config()$python)) {
+        message("reticulate::virtualenv_remove('r-reticulate')")
+      } else {
+        message("reticulate::conda_remove('r-reticulate')")
+      }
+    }
+  }
 }
 
 #' Install PHATE Python Package
@@ -20,9 +39,6 @@ load_pyphate <- function() {
 #' On Linux and OS X the "virtualenv" method will be used by default
 #' ("conda" will be used if virtualenv isn't available). On Windows,
 #' the "conda" method is always used.
-#' As of reticulate v1.7, this functionality is only available in the
-#' development version of reticulate, which can be installed using
-#' `devtools::install_github('rstudio/reticulate')`
 #'
 #' @param envname Name of environment to install packages into
 #' @param method Installation method. By default, "auto" automatically finds
@@ -39,15 +55,17 @@ load_pyphate <- function() {
 install.phate <- function(envname = "r-reticulate", method = "auto",
                           conda = "auto", pip=TRUE, ...) {
   tryCatch({
+    message("Attempting to install PHATE Python package with reticulate")
     reticulate::py_install("phate",
       envname = envname, method = method,
       conda = conda, pip=pip, ...
     )
+    message("Install complete. Please restart R and try again.")
   },
   error = function(e) {
     stop(paste0(
-      "Cannot install PHATE, please install through pip ",
-      "(e.g. pip install phate)."
+      "Cannot locate PHATE Python package, please install through pip ",
+      "(e.g. pip install --user phate) and then restart R."
     ))
   }
   )
@@ -56,5 +74,6 @@ install.phate <- function(envname = "r-reticulate", method = "auto",
 pyphate <- NULL
 
 .onLoad <- function(libname, pkgname) {
-  load_pyphate()
+  py_config <- reticulate::py_discover_config(required_module = "phate")
+  load_pyphate(delay_load = TRUE)
 }
