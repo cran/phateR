@@ -1,4 +1,4 @@
-phateR v0.2.9
+phateR v0.4.0
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -36,8 +36,11 @@ For our Python and Matlab implementations, please see
       - [Installation with devtools and
         <code>reticulate</code>](#installation-with-devtools-and-reticulate)
       - [Installation from source](#installation-from-source)
+  - [Quick Start](#quick-start)
   - [Tutorial](#tutorial)
   - [Issues](#issues)
+      - [FAQ](#faq)
+      - [Help](#help)
 
 ## Installation
 
@@ -50,16 +53,17 @@ Python and `pip` together, or otherwise you can install `pip` from
 
 #### Installation from CRAN and PyPi
 
-Install `phateR` from CRAN by running the following code in R:
-
-``` r
-install.packages("phateR")
-```
-
-Install `phate` in Python by running the following code from a terminal:
+First install `phate` in Python by running the following code from a
+terminal:
 
 ``` bash
 pip install --user phate
+```
+
+Then install `phateR` from CRAN by running the following code in R:
+
+``` r
+install.packages("phateR")
 ```
 
 #### Installation with `devtools` and `reticulate`
@@ -69,15 +73,8 @@ The development version of PHATE can be installed directly from R with
 
 ``` r
 if (!suppressWarnings(require(devtools))) install.packages("devtools")
-devtools::install_github("KrishnaswamyLab/phateR")
-```
-
-If you have the development version of `reticulate`, you can also
-install `phate` in Python by running the following code in R:
-
-``` r
-devtools::install_github("rstudio/reticulate")
 reticulate::py_install("phate", pip=TRUE)
+devtools::install_github("KrishnaswamyLab/phateR")
 ```
 
 #### Installation from source
@@ -87,10 +84,10 @@ following in a terminal:
 
 ``` bash
 git clone --recursive git://github.com/KrishnaswamyLab/PHATE.git
-cd PHATE/phateR
-R CMD INSTALL
-cd ../Python
+cd PHATE/Python
 python setup.py install --user
+cd ../phateR
+R CMD INSTALL
 ```
 
 If the `phateR` folder is empty, you have may forgotten to use the
@@ -101,11 +98,25 @@ the following in a terminal:
 cd PHATE
 git submodule init
 git submodule update
-cd phateR
-R CMD INSTALL
-cd ../Python
+cd Python
 python setup.py install --user
+cd ../phateR
+R CMD INSTALL
 ```
+
+## Quick Start
+
+If you have loaded a data matrix `data` in R (cells on rows, genes on
+columns) you can run PHATE as follows:
+
+``` r
+library(phateR)
+data_phate <- phate(data)
+```
+
+phateR accepts R matrices, `Matrix` sparse matrices, `data.frame`s, and
+any other data type that can be converted to a matrix with the function
+`as.matrix`.
 
 ## Tutorial
 
@@ -113,7 +124,8 @@ This is a basic example running `phate` on a highly branched example
 dataset that is included with the package. You can read a tutorial on
 running PHATE on single-cell RNA-seq at
 <http://htmlpreview.github.io/?https://github.com/KrishnaswamyLab/phateR/blob/master/inst/examples/bonemarrow_tutorial.html>
-or in `inst/examples`.
+or in `inst/examples`. Running this tutorial from start to finish should
+take approximately 3 minutes.
 
 First, let’s load the tree data and examine it with PCA.
 
@@ -174,7 +186,7 @@ installed.
 
 ``` r
 library(ggplot2)
-#> Warning: package 'ggplot2' was built under R version 3.5.1
+#> Warning: package 'ggplot2' was built under R version 3.5.3
 ggplot(tree.phate, aes(x=PHATE1, y=PHATE2, color=tree.data$branches)) +
   geom_point()
 ```
@@ -183,8 +195,33 @@ ggplot(tree.phate, aes(x=PHATE1, y=PHATE2, color=tree.data$branches)) +
 
 ## Issues
 
+### FAQ
+
+  - **Should genes (features) by rows or columns?**
+
+To be consistent with common dimensionality reductions such as PCA
+(`stats::prcomp`) and t-SNE (`Rtsne::Rtsne`), we require that cells
+(observations) be rows and genes (features) be columns of your input
+data.
+
+  - **I have installed PHATE in Python, but phateR says it is not
+    installed\!**
+
+Check your `reticulate::py_discover_config("phate")` and compare it to
+the version of Python in which you installed PHATE (run `which python`
+and `which pip` in a terminal.) Chances are `reticulate` can’t find the
+right version of Python; you can fix this by adding the following line
+to your `~/.Renviron`:
+
+`PATH=/path/to/my/python`
+
+You can read more about `Renviron` at
+<https://cran.r-project.org/web/packages/startup/vignettes/startup-intro.html>.
+
+### Help
+
 Please let us know of any issues at the [GitHub
-repo](https://github.com/KrishnaswamyLab/phateR/issues). If you have any
-questions or require assistance using PHATE, please read the documentation
-by running `help(phateR::phate)` or contact us at
+repository](https://github.com/KrishnaswamyLab/phateR/issues). If you
+have any questions or require assistance using PHATE, please read the
+documentation by running `help(phateR::phate)` or contact us at
 <https://krishnaswamylab.org/get-help>.
