@@ -9,7 +9,10 @@ null_equal <- function(x, y) {
   }
 }
 
+#' Check that the current PHATE version in Python is up to date.
+#'
 #' @importFrom utils packageVersion
+#' @export
 check_pyphate_version <- function() {
   pyversion <- strsplit(pyphate$`__version__`, '\\.')[[1]]
   rversion <- strsplit(as.character(packageVersion("phateR")), '\\.')[[1]]
@@ -18,12 +21,12 @@ check_pyphate_version <- function() {
   if (as.integer(pyversion[1]) < major_version) {
     warning(paste0("Python PHATE version ", pyphate$`__version__`, " is out of date (recommended: ",
                    major_version, ".", minor_version, "). Please update with pip ",
-                   "(e.g. pip install --upgrade phate) or phateR::install.phate()."))
+                   "(e.g. ", reticulate::py_config()$python, " -m pip install --upgrade phate) or phateR::install.phate()."))
     return(FALSE)
   } else if (as.integer(pyversion[2]) < minor_version) {
     warning(paste0("Python PHATE version ", pyphate$`__version__`, " is out of date (recommended: ",
                    major_version, ".", minor_version, "). Consider updating with pip ",
-                   "(e.g. pip install --upgrade phate) or phateR::install.phate()."))
+                   "(e.g. ", reticulate::py_config()$python, " -m pip install --upgrade phate) or phateR::install.phate()."))
     return(FALSE)
   }
   return(TRUE)
@@ -51,15 +54,11 @@ failed_pyphate_import <- function(e) {
 }
 
 load_pyphate <- function() {
+  py_config <- try(reticulate::py_discover_config(required_module = "phate"))
   delay_load = list(on_load=check_pyphate_version, on_error=failed_pyphate_import)
   # load
-  if (is.null(pyphate)) {
-    # first time load
-    result <- try(pyphate <<- reticulate::import("phate", delay_load = delay_load))
-  } else {
-    # already loaded
-    result <- try(reticulate::import("phate", delay_load = delay_load))
-  }
+  pyphate <- try(reticulate::import("phate", delay_load = delay_load))
+  pyphate
 }
 
 #' Install PHATE Python Package
@@ -95,7 +94,7 @@ install.phate <- function(envname = "r-reticulate", method = "auto",
   error = function(e) {
     stop(paste0(
       "Cannot locate PHATE Python package, please install through pip ",
-      "(e.g. pip install --user phate) and then restart R."
+      "(e.g. ", reticulate::py_config()$python, " -m pip install --user phate) and then restart R."
     ))
   }
   )
@@ -103,7 +102,8 @@ install.phate <- function(envname = "r-reticulate", method = "auto",
 
 pyphate <- NULL
 
+#' @importFrom reticulate py_discover_config
+#' @importFrom memoise memoise
 .onLoad <- function(libname, pkgname) {
-  py_config <- reticulate::py_discover_config(required_module = "phate")
-  load_pyphate()
+  pyphate <<- memoise::memoise(load_pyphate)
 }

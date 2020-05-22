@@ -1,12 +1,12 @@
-ad385dfb66ddeb4bd207b0be06ef1a4e *DESCRIPTION
+c33df849b4fb66f3641692cfee6d0f41 *DESCRIPTION
 188cfa259693c76274707f85d68030a0 *LICENSE
-99f3f9250fdedc659456244484f71205 *NAMESPACE
+cf1fc06d1bc2ae67d06e9d7cd1a9f70a *NAMESPACE
 c43f7b3905616c869044a15493d73730 *R/cluster.R
-64e28aabb0679403308bc6e52c13a17f *R/phate.R
+755680898b359096e49bcd5ba54187dd *R/phate.R
 915ebfd975177739ca0bd05b3854ebed *R/preprocessing.R
 2e6f99fc1d5623e3866b8ec341199e08 *R/tree.data.R
-3fb018b36dd606c179894db5fe6c3477 *R/utils.R
-f98bd7dfe2e2095482372e80e0a2b082 *README.md
+7f4a5c3fcbbfbd5c81ad30d549670ed4 *R/utils.R
+bb939a0938e4120297ed1c305298b8e3 *README.md
 35792d11ca66c7f01401669926f800bf *data/datalist
 e67f22f4611574a44399cd61bf8516c4 *data/tree.data.rda
 334330c0cbdf7628514df753cfbf229f *data/tree.data.small.rda
@@ -17,6 +17,7 @@ e67f22f4611574a44399cd61bf8516c4 *data/tree.data.rda
 0f0341490b61ab0732ad12a10a268bf5 *inst/extdata/generate_treedata.R
 d5e877b6a7397919a36b944503f5ddc4 *man/as.data.frame.Rd
 4c23c91ad3c6f2877e7d531b951189c8 *man/as.matrix.Rd
+413d9e19bd1d4eb2ca7e980450a7f72f *man/check_pyphate_version.Rd
 dfe29246e98666c90ea4489d5252c154 *man/cluster_phate.Rd
 4f493e09a731112a30ebf919043df921 *man/figures/README-adjust-parameters-1.png
 3aa539d1dfba1e13557ac83b95533222 *man/figures/README-example-data-1.png
